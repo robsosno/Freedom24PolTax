@@ -1,4 +1,5 @@
 ﻿using System;
+using CsvHelper;
 using SharesTax.Dto;
 
 namespace SharesTax;
@@ -15,8 +16,11 @@ public class Fifo
     private int maxId = 0;
 
     public void Push(
-                    DateOnly dateTime,
+                    DateOnly valueDate,
+                    TimeOnly valueTime,
+                    DateOnly postDate,
                     string symbol,
+                    string isin,
                     int quantity,
                     decimal price,
                     decimal fees,
@@ -30,8 +34,11 @@ public class Fifo
         FifoBuyItem item = new()
         {
             Id = maxId++,
-            OpenDate = dateTime,
+            ValueDate = valueDate,
+            ValueTime = valueTime,
+            PostDate = postDate,
             Symbol = symbol,
+            Isin = isin,
             InitialQuantity = quantity,
             Quantity = quantity,
             InitialBuyAmount = Math.Round(amount, 2, MidpointRounding.AwayFromZero),
@@ -44,8 +51,11 @@ public class Fifo
 
     public void Pop(
                     int id,
+                    DateOnly valueDate,
+                    TimeOnly valueTime,
                     DateOnly dateTime,
                     string symbol,
+                    string isin,
                     int quantity,
                     decimal price,
                     decimal fees,
@@ -68,7 +78,9 @@ public class Fifo
             FifoSellItem sellItem = new();
             sellItem.GroupId = id;
             sellItem.Id = cnt + 1;
-            sellItem.CloseDate = dateTime;
+            sellItem.ValueDate = valueDate;
+            sellItem.ValueTime = valueTime;
+            sellItem.PostDate = dateTime;
             if (quantity >= item.Quantity)
             {
                 sellItem.Quantity = item.Quantity;

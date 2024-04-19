@@ -1,41 +1,57 @@
 ﻿using System.Globalization;
+using System.Text.Json.Nodes;
+using System.Text.Json;
 using CsvHelper;
 using CsvHelper.Configuration;
 using SharesTax.Dto;
+using static System.TimeZoneInfo;
+using System.Diagnostics;
+using System.Xml.Linq;
 
 namespace SharesTax;
 
 public class FileImports
 {
-    public static IList<TransactionDto> ImportTransactions(string fileName)
+    public static (IList<TransactionDto>, IList<DividendDto>) ImportTransactions(string fileName)
     {
-        CultureInfo culture = CultureInfo.GetCultureInfo("pl-PL");
-        var config = new CsvConfiguration(culture);
-        config.HasHeaderRecord = true;
-        config.Delimiter = ";";
-        using var reader = new StreamReader(fileName);
-        using var csv = new CsvReader(reader, config);
-        IList<TransactionDto> records = [];
-        csv.Read();
-        csv.ReadHeader();
-        int line = 1;
-        while (csv.Read())
+        CultureInfo culture = CultureInfo.InvariantCulture;
+
+        using StreamReader reader = new(fileName);
+        var json = reader.ReadToEnd();
+        var jsonElement = JsonSerializer.Deserialize<JsonElement>(json);
+        var dateStart = jsonElement.GetProperty("date_start").GetString();
+        var dateEnd = jsonElement.GetProperty("date_end").GetString();
+        var plainAccountInfoData = jsonElement.GetProperty("plainAccountInfoData");
+        var base_currency = plainAccountInfoData.GetProperty("base_currency").GetString();
+        var accountInfo = jsonElement.GetProperty("accountInfo");
+        foreach (var info in accountInfo.EnumerateArray())
         {
-            string tradeNo = csv.GetField<string>(0) ?? string.Empty;
-            var s = csv.GetField<string>(1);
-            var transactionTime = s != null ? DateTime.Parse(s) : DateTime.MinValue;
-            s = csv.GetField<string>(2);
+            var commission_currency = info.GetProperty(" Commission currency ").GetString();
+            break;
+        }
+        var trades = jsonElement.GetProperty("trades");
+        var tradesDetailed = trades.GetProperty("detailed");
+        IList<TransactionDto> transactions = [];
+        int line = 1;
+        foreach (var trade in tradesDetailed.EnumerateArray())
+        {
+
+            var tradeNo = trade.GetProperty("trade_id").GetInt32();
+            var s = trade.GetProperty("date").GetString();
+            var transactionDateTime = s != null ? DateTime.Parse(s) : DateTime.MinValue;
+            s = trade.GetProperty("pay_d").GetString();
             var postingDate = s != null ? DateOnly.Parse(s) : DateOnly.MinValue;
-            string ticker = csv.GetField<string>(3) ?? string.Empty;
-            s = csv.GetField<string>(4);
+            var ticker = trade.GetProperty("instr_nm").GetString() ?? string.Empty;
+            var isin = trade.GetProperty("isin").GetString() ?? string.Empty;
+            s = trade.GetProperty("operation").GetString();
             OrderType orderType;
-            if (s == "Sell")
+            if (s == "sell")
             {
                 orderType = OrderType.Sell;
             }
             else
             {
-                if (s == "Buy")
+                if (s == "buy")
                 {
                     orderType = OrderType.Buy;
                 }
@@ -44,46 +60,92 @@ public class FileImports
                     throw new ArgumentException("Incorrect value", nameof(orderType));
                 }
             }
+            var quantity = trade.GetProperty("q").GetInt32();
+            var price = trade.GetProperty("p").GetDecimal();
+            var amountCurrency = trade.GetProperty("curr_c").GetString() ?? string.Empty;
+            var amount = trade.GetProperty("summ").GetDecimal();
+            var profit = decimal.Parse(trade.GetProperty("fifo_profit").GetString() ?? "0", culture);
+            var commissionCurrency = trade.GetProperty("commission_currency").GetString() ?? string.Empty;
+            var commission = trade.GetProperty("commission").GetDecimal();
 
-            var quantity = csv.GetField<int>(5);
-            var price = csv.GetField<decimal>(6);
-            string amountCurrency = csv.GetField<string>(7) ?? string.Empty;
-            var amount = csv.GetField<decimal>(8);
-            string profitCurrency = csv.GetField<string>(9) ?? string.Empty;
-            var profit = csv.GetField<decimal>(10);
-            string commissionCurrency = csv.GetField<string>(11) ?? string.Empty;
-            var commission = csv.GetField<decimal>(12);
-
-            var record = new TransactionDto()
+            var transaction = new TransactionDto()
             {
-                Id = 0,
-                TradeNo = tradeNo,
-                TransactionTime = transactionTime,
+                Id = line,
+                TradeNo = tradeNo.ToString(),
+                TransactionDate = DateOnly.FromDateTime(transactionDateTime),
+                TransactionTime = TimeOnly.FromDateTime(transactionDateTime),
                 PostingDate = postingDate,
                 Ticker = ticker,
+                Isin = isin,
                 OrderType = orderType,
                 Quantity = quantity,
                 Price = price,
                 AmountCurrency = amountCurrency,
                 Amount = amount,
-                ProfitCurrency = profitCurrency,
                 Profit = profit,
                 CommissionCurrency = commissionCurrency,
                 Commission = commission
             };
-
-            records.Add(record);
+            transactions.Add(transaction);
             line++;
         }
 
-        records = records.Reverse().ToList();
+        var commissions = jsonElement.GetProperty("commissions");
+        var commissionsTotal = commissions.GetProperty("total");
+        var commissionsTotalEur = decimal.Parse(commissionsTotal.GetProperty("EUR").GetString() ?? "0", culture);
+
+        var corporateActions = jsonElement.GetProperty("corporate_actions");
+        var corporateActionsDetailed = corporateActions.GetProperty("detailed");
+        IList<DividendDto> dividends = [];
         int i = 0;
-        foreach (var record in records)
+        foreach (var corporateAction in corporateActionsDetailed.EnumerateArray())
         {
             i++;
-            record.Id = i;
+            var type = corporateAction.GetProperty("type").GetString() ?? string.Empty;
+            if (type != "Dividends")
+            {
+                throw new ArgumentException("Incorrect value", nameof(type));
+            }
+
+            var s = corporateAction.GetProperty("date").GetString();
+            var postingDate = s != null ? DateOnly.Parse(s) : DateOnly.MinValue;
+            var asset = corporateAction.GetProperty("asset_type").GetString() ?? string.Empty;
+            var amount = corporateAction.GetProperty("amount").GetDecimal();
+            var unitValue = corporateAction.GetProperty("amount_per_one").GetDecimal();
+            var unitCurrency = corporateAction.GetProperty("currency").GetString() ?? string.Empty;
+            var ticker = corporateAction.GetProperty("ticker").GetString() ?? string.Empty;
+            var isin = corporateAction.GetProperty("isin").GetString() ?? string.Empty;
+            s = corporateAction.GetProperty("ex_date").GetString();
+            var fixationDate = s != null ? DateOnly.Parse(s) : DateOnly.MinValue;
+            s = corporateAction.GetProperty("q_on_ex_date").GetString() ?? "0";
+            var quantity = Decimal.ToInt32(decimal.Parse(s, culture));
+            s = corporateAction.GetProperty("tax_amount").GetString() ?? "0";
+            var taxAmount = decimal.Parse(s, culture);
+            var taxCurrency = corporateAction.GetProperty("tax_currency").GetString() ?? string.Empty;
+            var comment = corporateAction.GetProperty("comment").GetString() ?? string.Empty;
+
+            DividendDto dividend = new()
+            {
+                Id = i,
+                Type = type,
+                PostingDate = postingDate,
+                Asset = asset,
+                Amount = amount,
+                UnitValue = unitValue,
+                UnitCurrency = unitCurrency,
+                Ticker = ticker,
+                Isin = isin,
+                FixationDate = fixationDate,
+                Quantity = quantity,
+                TaxAmount = taxAmount,
+                TaxCurrency = taxCurrency,
+                Comment = comment
+            };
+
+            dividends.Add(dividend);
+            line++;
         }
 
-        return records;
+        return (transactions, dividends);
     }
 }

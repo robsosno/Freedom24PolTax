@@ -11,11 +11,11 @@ public class Calculations
         {
             if (transaction.OrderType == OrderType.Buy)
             {
-                fifo.Push(transaction.PostingDate, transaction.Ticker, transaction.Quantity, transaction.Price, transaction.Commission, transaction.Amount);
+                fifo.Push(transaction.TransactionDate, transaction.TransactionTime, transaction.PostingDate, transaction.Ticker, transaction.Isin, transaction.Quantity, transaction.Price, transaction.Commission, transaction.Amount);
             }
             else
             {
-                fifo.Pop(transaction.Id, transaction.PostingDate, transaction.Ticker, transaction.Quantity, transaction.Price, transaction.Commission, transaction.Amount);
+                fifo.Pop(transaction.Id, transaction.TransactionDate, transaction.TransactionTime, transaction.PostingDate, transaction.Ticker, transaction.Isin, transaction.Quantity, transaction.Price, transaction.Commission, transaction.Amount);
             }
         }
 

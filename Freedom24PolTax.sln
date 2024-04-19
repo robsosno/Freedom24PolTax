@@ -5,9 +5,7 @@ VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharesTax", "SharesTax\SharesTax.csproj", "{D688F88E-4AAC-4235-A134-14CE9B3886E8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DividendTax", "DividendTax\DividendTax.csproj", "{9E58CAA4-AD21-45A4-B6BD-D0762D6B0D5C}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonUtils", "CommonUtils\CommonUtils.csproj", "{EC43A3F2-26A7-41C1-ACCA-9C5A9AC851E3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommonUtils", "CommonUtils\CommonUtils.csproj", "{EC43A3F2-26A7-41C1-ACCA-9C5A9AC851E3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,10 +17,6 @@ Global
 		{D688F88E-4AAC-4235-A134-14CE9B3886E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D688F88E-4AAC-4235-A134-14CE9B3886E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D688F88E-4AAC-4235-A134-14CE9B3886E8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9E58CAA4-AD21-45A4-B6BD-D0762D6B0D5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9E58CAA4-AD21-45A4-B6BD-D0762D6B0D5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9E58CAA4-AD21-45A4-B6BD-D0762D6B0D5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9E58CAA4-AD21-45A4-B6BD-D0762D6B0D5C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EC43A3F2-26A7-41C1-ACCA-9C5A9AC851E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EC43A3F2-26A7-41C1-ACCA-9C5A9AC851E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC43A3F2-26A7-41C1-ACCA-9C5A9AC851E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
