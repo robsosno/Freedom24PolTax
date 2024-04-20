@@ -12,11 +12,7 @@ public class NBPApi : INBPApi
         NBPRate rate;
         if (currency == "PLN")
         {
-            rate = new();
-            rate.TableName = "1";
-            rate.Date = valueDate;
-            rate.Currency = currency;
-            rate.Rate = 1;
+            rate = new("1", valueDate, currency, 1);
             return rate;
         }
 
@@ -25,9 +21,8 @@ public class NBPApi : INBPApi
             throw new ArgumentException("brak podanego kodu waluty");
         }
 
-        if (cache.ContainsKey(currency))
+        if (cache.TryGetValue(currency, out Tuple<DateOnly, NBPRate>? pair))
         {
-            var pair = cache[currency];
             if (pair.Item1 == valueDate)
             {
                 return pair.Item2;
@@ -62,7 +57,7 @@ public class NBPApi : INBPApi
                 throw new InvalidOperationException(errMsg);
             }
 
-            if (maxDays<0)
+            if (maxDays < 0)
             {
                 throw new InvalidOperationException("Brak tabel kursowych w NBP");
             }
@@ -71,14 +66,10 @@ public class NBPApi : INBPApi
         using var contentStream = httpResponseMessage.Content.ReadAsStreamAsync().Result;
         if (JsonSerializer.Deserialize<NbpResponseDto>(contentStream) is NbpResponseDto nbpResponse)
         {
-            rate = new();
-            rate.TableName = "1";
-            rate.Date = valueDate;
-            rate.Currency = currency;
-            rate.Rate = nbpResponse.RateList[0].Rate;
+            rate = new("1", valueDate, currency, nbpResponse.RateList[0].Rate);
             return rate;
         }
 
-        throw new InvalidOperationException("deserializacja dała null");            
+        throw new InvalidOperationException("deserializacja dała null");
     }
 }

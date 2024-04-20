@@ -1,5 +1,4 @@
 ﻿using System;
-using CsvHelper;
 using SharesTax.Dto;
 
 namespace SharesTax;
@@ -23,7 +22,9 @@ public class Fifo
                     string isin,
                     int quantity,
                     decimal price,
+                    string feeCurrency,
                     decimal fees,
+                    string currency,
                     decimal amount)
     {
         if (Math.Abs(Math.Round(price * quantity - amount)) > 0.01M)
@@ -41,10 +42,12 @@ public class Fifo
             Isin = isin,
             InitialQuantity = quantity,
             Quantity = quantity,
-            InitialBuyAmount = Math.Round(amount, 2, MidpointRounding.AwayFromZero),
-            BuyAmount = Math.Round(amount, 2, MidpointRounding.AwayFromZero),
-            InitialBuyFee = Math.Round(fees, 2, MidpointRounding.AwayFromZero),
-            BuyFee = Math.Round(fees, 2, MidpointRounding.AwayFromZero)
+            InitialAmount = Math.Round(amount, 2, MidpointRounding.AwayFromZero),
+            Currency = currency,
+            Amount = Math.Round(amount, 2, MidpointRounding.AwayFromZero),
+            InitialFee = Math.Round(fees, 2, MidpointRounding.AwayFromZero),
+            FeeCurrency = feeCurrency,
+            Fee = Math.Round(fees, 2, MidpointRounding.AwayFromZero)
         };
         FifoItems.Add(item);
     }
@@ -53,12 +56,13 @@ public class Fifo
                     int id,
                     DateOnly valueDate,
                     TimeOnly valueTime,
-                    DateOnly dateTime,
+                    DateOnly postDate,
                     string symbol,
-                    string isin,
                     int quantity,
                     decimal price,
+                    string feeCurrency,
                     decimal fees,
+                    string currency,
                     decimal amount)
     {
         if (Math.Abs(Math.Round(price * quantity - amount)) > 0.01M)
@@ -75,42 +79,58 @@ public class Fifo
         foreach (var item in FifoItems.Where(x => x.Quantity != 0 && x.Symbol == symbol).OrderBy(x => x.Id))
         {
             var cnt = item.SellItems.Count;
-            FifoSellItem sellItem = new();
-            sellItem.GroupId = id;
-            sellItem.Id = cnt + 1;
-            sellItem.ValueDate = valueDate;
-            sellItem.ValueTime = valueTime;
-            sellItem.PostDate = dateTime;
+            FifoSellItem sellItem;
+
             if (quantity >= item.Quantity)
             {
-                sellItem.Quantity = item.Quantity;
-                sellItem.BuyAmount = item.BuyAmount;
-                sellItem.SellAmount = Math.Round(initialamount * quantity / initialQuantity, 2, MidpointRounding.AwayFromZero)
-                    - Math.Round(initialamount * (quantity - item.Quantity) / initialQuantity, 2, MidpointRounding.AwayFromZero);
-                sellItem.BuyFee = item.BuyFee;
-                sellItem.SellFee = Math.Round(initialfees * quantity / initialQuantity, 2, MidpointRounding.AwayFromZero)
-                    - Math.Round(initialfees * (quantity - item.Quantity) / initialQuantity, 2, MidpointRounding.AwayFromZero);
+                sellItem = new FifoSellItem(
+                    id,
+                    cnt + 1,
+                    valueDate,
+                    valueTime,
+                    postDate,
+                    item.Quantity,
+                    item.Amount,
+                    currency,
+                    Math.Round(initialamount * quantity / initialQuantity, 2, MidpointRounding.AwayFromZero)
+                        - Math.Round(initialamount * (quantity - item.Quantity) / initialQuantity, 2, MidpointRounding.AwayFromZero),
+                    item.Fee,
+                    feeCurrency,
+                    Math.Round(initialfees * quantity / initialQuantity, 2, MidpointRounding.AwayFromZero)
+                        - Math.Round(initialfees * (quantity - item.Quantity) / initialQuantity, 2, MidpointRounding.AwayFromZero)
+                );
+
                 item.SellItems.Add(sellItem);
                 quantity -= item.Quantity;
-                fees -= sellItem.SellFee;
-                amount -= sellItem.SellAmount;
+                fees -= sellItem.Fee;
+                amount -= sellItem.Amount;
                 item.Quantity = 0;
-                item.BuyAmount = 0;
-                item.BuyFee = 0;
+                item.Amount = 0;
+                item.Fee = 0;
             }
             else
             {
-                sellItem.Quantity = quantity;
-                sellItem.BuyAmount = Math.Round(item.InitialBuyAmount * item.Quantity / item.InitialQuantity, 2, MidpointRounding.AwayFromZero)
-                    - Math.Round(item.InitialBuyAmount * (item.Quantity - quantity) / item.InitialQuantity, 2, MidpointRounding.AwayFromZero);
-                sellItem.SellAmount = amount;
-                sellItem.BuyFee = Math.Round(item.InitialBuyFee * item.Quantity / item.InitialQuantity, 2, MidpointRounding.AwayFromZero)
-                    - Math.Round(item.InitialBuyFee * (item.Quantity - quantity) / item.InitialQuantity, 2, MidpointRounding.AwayFromZero);
-                sellItem.SellFee = fees;
+                sellItem = new FifoSellItem(
+                    id,
+                    cnt + 1,
+                    valueDate,
+                    valueTime,
+                    postDate,
+                    quantity,
+                    Math.Round(item.InitialAmount * item.Quantity / item.InitialQuantity, 2, MidpointRounding.AwayFromZero)
+                        - Math.Round(item.InitialAmount * (item.Quantity - quantity) / item.InitialQuantity, 2, MidpointRounding.AwayFromZero),
+                    currency,
+                    amount,
+                    Math.Round(item.InitialFee * item.Quantity / item.InitialQuantity, 2, MidpointRounding.AwayFromZero)
+                        - Math.Round(item.InitialFee * (item.Quantity - quantity) / item.InitialQuantity, 2, MidpointRounding.AwayFromZero),
+                    feeCurrency,
+                    fees
+                );
+
                 item.SellItems.Add(sellItem);
                 item.Quantity -= quantity;
-                item.BuyAmount -= sellItem.BuyAmount;
-                item.BuyFee -= sellItem.BuyFee;
+                item.Amount -= sellItem.BuyAmount;
+                item.Fee -= sellItem.BuyFee;
                 quantity = 0;
                 fees = 0;
                 amount = 0;

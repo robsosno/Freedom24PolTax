@@ -3,14 +3,12 @@ using System.Text.Json.Serialization;
 
 namespace CommonUtils.Dto;
 
-public class NbpResponseDto
-{
-    [JsonPropertyName("table")]
-    public string TableType { get; set; }
-    [JsonPropertyName("currency")]
-    public string CurrencyName { get; set; }
-    [JsonPropertyName("code")]
-    public string CurrencyCode { get; set; }
-    [JsonPropertyName("rates")]
-    public IList<NbpRateResponseDto> RateList { get; set; }
-}
+public record NbpResponseDto(
+    [property: JsonPropertyName("table")]
+    string TableType,
+    [property: JsonPropertyName("currency")]
+    string CurrencyName,
+    [property: JsonPropertyName("code")]
+    string CurrencyCode,
+    [property: JsonPropertyName("rates")]
+    IList<NbpRateResponseDto> RateList);

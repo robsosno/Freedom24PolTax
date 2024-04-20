@@ -2,12 +2,10 @@
 
 namespace CommonUtils.Dto;
 
-public class NbpRateResponseDto
-{
-    [JsonPropertyName("no")]
-    public string TableNumber { get; set; }
-    [JsonPropertyName("effectiveDate")]
-    public string EffectiveDate { get; set; }
-    [JsonPropertyName("mid")]
-    public decimal Rate { get; set; }
-}
+public record NbpRateResponseDto(
+    [property: JsonPropertyName("no")]
+    string TableNumber,
+    [property: JsonPropertyName("effectiveDate")]
+    string EffectiveDate,
+    [property: JsonPropertyName("mid")]
+    decimal Rate);

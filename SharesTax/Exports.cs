@@ -13,24 +13,29 @@ public class Exports
         {
             foreach (var sellItem in buyItem.SellItems)
             {
-                StockReportItem stockReportItem = new()
-                {
-                    GroupId = sellItem.GroupId,
-                    Id = sellItem.Id,
-                    Symbol = buyItem.Symbol,
-                    Isin = buyItem.Isin,
-                    Quantity = sellItem.Quantity,
-                    OpenValueDate = buyItem.ValueDate,
-                    OpenValueTime = buyItem.ValueTime,
-                    OpenPostDate = buyItem.PostDate,
-                    BuyAmount = sellItem.BuyAmount,
-                    BuyFee = sellItem.BuyFee,
-                    CloseValueDate = sellItem.ValueDate,
-                    CloseValueTime = sellItem.ValueTime,
-                    ClosePostDate = sellItem.PostDate,
-                    SellAmount = sellItem.SellAmount,
-                    SellFee = sellItem.SellFee
-                };
+                StockReportItem stockReportItem = new
+                (
+                     sellItem.GroupId,
+                     sellItem.Id,
+                     buyItem.Symbol,
+                     buyItem.Isin,
+                     sellItem.Quantity,
+                     buyItem.ValueDate,
+                     buyItem.ValueTime,
+                     buyItem.PostDate,
+                     buyItem.Currency,
+                     sellItem.BuyAmount,
+                     buyItem.FeeCurrency,
+                     sellItem.BuyFee,
+                     sellItem.ValueDate,
+                     sellItem.ValueTime,
+                     sellItem.PostDate,
+                     sellItem.Currency,
+                     sellItem.Amount,
+                     sellItem.FeeCurrency,
+                     sellItem.Fee
+                );
+
                 l.Add(stockReportItem);
             }
         }
@@ -62,10 +67,10 @@ public class Exports
 
         foreach (var stockReportItem in l.OrderBy(x => x.GroupId).ThenBy(x => x.Id))
         {
-            NBPRate buyRate = nbpApi.GetRate("USD", stockReportItem.OpenPostDate);
-            NBPRate sellRate = nbpApi.GetRate("USD", stockReportItem.ClosePostDate);
-            NBPRate buyFeeRate = nbpApi.GetRate("EUR", stockReportItem.OpenPostDate);
-            NBPRate sellFeeRate = nbpApi.GetRate("EUR", stockReportItem.ClosePostDate);
+            var buyRate = nbpApi.GetRate(stockReportItem.BuyCurrency, stockReportItem.OpenPostDate);
+            var sellRate = nbpApi.GetRate(stockReportItem.SellCurrency, stockReportItem.ClosePostDate);
+            var buyFeeRate = nbpApi.GetRate(stockReportItem.BuyFeeCurrency, stockReportItem.OpenPostDate);
+            var sellFeeRate = nbpApi.GetRate(stockReportItem.SellFeeCurrency, stockReportItem.ClosePostDate);
             writetext.WriteLine(
                 "{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};{11};{12};{13};{14};{15};{16};{17};{18};{19};{20}",
                 stockReportItem.OpenValueDate.ToString("dd-MM-yyyy"),
@@ -89,7 +94,7 @@ public class Exports
                 sellFeeRate.Rate,
                 Math.Round(stockReportItem.SellAmount * sellRate.Rate, 2),
                 Math.Round(stockReportItem.SellFee * sellFeeRate.Rate, 2)
-                );
+            );
         }
     }
 
@@ -111,7 +116,7 @@ public class Exports
 
             foreach (var d in dividends.OrderBy(o => o.Id))
             {
-                NBPRate rate = nbpApi.GetRate(d.UnitCurrency, d.PostingDate);
+                var rate = nbpApi.GetRate(d.UnitCurrency, d.PostingDate);
                 writetext.WriteLine(
                     "{0};{1};{2};{3};{4};{5};{6};{7};{8}",
                     d.FixationDate.ToString("dd-MM-yyyy"),

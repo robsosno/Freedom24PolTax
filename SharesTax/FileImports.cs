@@ -1,12 +1,6 @@
 ﻿using System.Globalization;
-using System.Text.Json.Nodes;
 using System.Text.Json;
-using CsvHelper;
-using CsvHelper.Configuration;
 using SharesTax.Dto;
-using static System.TimeZoneInfo;
-using System.Diagnostics;
-using System.Xml.Linq;
 
 namespace SharesTax;
 
@@ -32,10 +26,9 @@ public class FileImports
         var trades = jsonElement.GetProperty("trades");
         var tradesDetailed = trades.GetProperty("detailed");
         IList<TransactionDto> transactions = [];
-        int line = 1;
+        int i = 1;
         foreach (var trade in tradesDetailed.EnumerateArray())
         {
-
             var tradeNo = trade.GetProperty("trade_id").GetInt32();
             var s = trade.GetProperty("date").GetString();
             var transactionDateTime = s != null ? DateTime.Parse(s) : DateTime.MinValue;
@@ -68,26 +61,24 @@ public class FileImports
             var commissionCurrency = trade.GetProperty("commission_currency").GetString() ?? string.Empty;
             var commission = trade.GetProperty("commission").GetDecimal();
 
-            var transaction = new TransactionDto()
-            {
-                Id = line,
-                TradeNo = tradeNo.ToString(),
-                TransactionDate = DateOnly.FromDateTime(transactionDateTime),
-                TransactionTime = TimeOnly.FromDateTime(transactionDateTime),
-                PostingDate = postingDate,
-                Ticker = ticker,
-                Isin = isin,
-                OrderType = orderType,
-                Quantity = quantity,
-                Price = price,
-                AmountCurrency = amountCurrency,
-                Amount = amount,
-                Profit = profit,
-                CommissionCurrency = commissionCurrency,
-                Commission = commission
-            };
+            var transaction = new TransactionDto(
+                i,
+                tradeNo.ToString(),
+                DateOnly.FromDateTime(transactionDateTime),
+                TimeOnly.FromDateTime(transactionDateTime),
+                postingDate,
+                ticker,
+                isin,
+                orderType,
+                quantity,
+                price,
+                amountCurrency,
+                amount,
+                profit,
+                commissionCurrency,
+                commission);
             transactions.Add(transaction);
-            line++;
+            i++;
         }
 
         var commissions = jsonElement.GetProperty("commissions");
@@ -97,7 +88,7 @@ public class FileImports
         var corporateActions = jsonElement.GetProperty("corporate_actions");
         var corporateActionsDetailed = corporateActions.GetProperty("detailed");
         IList<DividendDto> dividends = [];
-        int i = 0;
+        i = 0;
         foreach (var corporateAction in corporateActionsDetailed.EnumerateArray())
         {
             i++;
@@ -124,26 +115,26 @@ public class FileImports
             var taxCurrency = corporateAction.GetProperty("tax_currency").GetString() ?? string.Empty;
             var comment = corporateAction.GetProperty("comment").GetString() ?? string.Empty;
 
-            DividendDto dividend = new()
-            {
-                Id = i,
-                Type = type,
-                PostingDate = postingDate,
-                Asset = asset,
-                Amount = amount,
-                UnitValue = unitValue,
-                UnitCurrency = unitCurrency,
-                Ticker = ticker,
-                Isin = isin,
-                FixationDate = fixationDate,
-                Quantity = quantity,
-                TaxAmount = taxAmount,
-                TaxCurrency = taxCurrency,
-                Comment = comment
-            };
+            DividendDto dividend = new
+            (
+                i,
+                type,
+                postingDate,
+                asset,
+                amount,
+                unitValue,
+                unitCurrency,
+                ticker,
+                isin,
+                fixationDate,
+                quantity,
+                taxAmount,
+                taxCurrency,
+                comment
+            );
 
             dividends.Add(dividend);
-            line++;
+            i++;
         }
 
         return (transactions, dividends);
