@@ -5,7 +5,7 @@ namespace Freedom24PolTax;
 
 public class Exports
 {
-    public static void StockProfit(Fifo fifo, INBPApi nbpApi)
+    public static void StockProfit(string sharesFileName, Fifo fifo, INBPApi nbpApi)
     {
         IList<StockReportItem> l = [];
         foreach (var buyItem in fifo.FifoItems.Where(x => x.SellItems.Count != 0).OrderByDescending(x => x.Id))
@@ -39,7 +39,7 @@ public class Exports
             }
         }
 
-        using StreamWriter writetext = new("shares.csv");
+        using StreamWriter writetext = new(sharesFileName);
         writetext.WriteLine(
                    "{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};{11};{12};{13};{14};{15};{16};{17};{18};{19};{20}",
                    "Data tr.",
@@ -97,9 +97,9 @@ public class Exports
         }
     }
 
-    public static void CalculateDividendProfit(IList<DividendDto> dividends, INBPApi nbpApi)
+    public static void CalculateDividendProfit(string dividendFileName, IList<DividendDto> dividends, INBPApi nbpApi)
     {
-        using (StreamWriter writetext = new("dividend.csv"))
+        using (StreamWriter writetext = new(dividendFileName))
         {
             writetext.WriteLine(
                         "{0};{1};{2};{3};{4};{5};{6};{7};{8}",
