@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SharesTax.Dto;
+namespace Freedom24PolTax.Dto;
 
 public enum OrderType
 {

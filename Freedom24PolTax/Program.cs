@@ -1,6 +1,6 @@
 using CommonUtils;
-using SharesTax;
-using SharesTax.Dto;
+using Freedom24PolTax;
+using Freedom24PolTax.Dto;
 
 var fileName = "d:\\documents\\freedom24\\1315975_2023-05-12 23 59 59_2024-03-23 23 59 59_all.json";
 IList<DividendDto> dividends;

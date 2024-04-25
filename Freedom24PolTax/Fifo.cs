@@ -1,7 +1,7 @@
 ﻿using System;
-using SharesTax.Dto;
+using Freedom24PolTax.Dto;
 
-namespace SharesTax;
+namespace Freedom24PolTax;
 
 public class Fifo
 {
