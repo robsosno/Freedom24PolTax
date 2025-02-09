@@ -3,10 +3,19 @@ using Freedom24PolTax.Dto;
 
 namespace Freedom24PolTax;
 
+/// <summary>
+/// Represents a FIFO (First In, First Out) inventory management system.
+/// </summary>
 public class Fifo
 {
+    /// <summary>
+    /// Gets or sets the list of FIFO buy items.
+    /// </summary>
     public IList<FifoBuyItem> FifoItems { get; set; }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Fifo"/> class.
+    /// </summary>
     public Fifo()
     {
         FifoItems = [];
@@ -14,6 +23,21 @@ public class Fifo
 
     private int maxId = 0;
 
+    /// <summary>
+    /// Adds a new buy item to the FIFO list.
+    /// </summary>
+    /// <param name="valueDate">The value date of the buy item.</param>
+    /// <param name="valueTime">The value time of the buy item.</param>
+    /// <param name="postDate">The post date of the buy item.</param>
+    /// <param name="symbol">The symbol of the buy item.</param>
+    /// <param name="isin">The ISIN of the buy item.</param>
+    /// <param name="quantity">The quantity of the buy item.</param>
+    /// <param name="price">The price of the buy item.</param>
+    /// <param name="feeCurrency">The currency of the fees.</param>
+    /// <param name="fees">The fees associated with the buy item.</param>
+    /// <param name="currency">The currency of the buy item.</param>
+    /// <param name="amount">The total amount of the buy item.</param>
+    /// <exception cref="ArgumentException">Thrown when the calculated amount does not match the provided amount.</exception>
     public void Push(
                     DateOnly valueDate,
                     TimeOnly valueTime,
@@ -52,6 +76,22 @@ public class Fifo
         FifoItems.Add(item);
     }
 
+    /// <summary>
+    /// Removes a specified quantity of a sell item from the FIFO list.
+    /// </summary>
+    /// <param name="id">The ID of the sell item.</param>
+    /// <param name="valueDate">The value date of the sell item.</param>
+    /// <param name="valueTime">The value time of the sell item.</param>
+    /// <param name="postDate">The post date of the sell item.</param>
+    /// <param name="symbol">The symbol of the sell item.</param>
+    /// <param name="quantity">The quantity of the sell item.</param>
+    /// <param name="price">The price of the sell item.</param>
+    /// <param name="feeCurrency">The currency of the fees.</param>
+    /// <param name="fees">The fees associated with the sell item.</param>
+    /// <param name="currency">The currency of the sell item.</param>
+    /// <param name="amount">The total amount of the sell item.</param>
+    /// <exception cref="ArgumentException">Thrown when the calculated amount does not match the provided amount.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when more items are sold than bought.</exception>
     public void Pop(
                     int id,
                     DateOnly valueDate,
@@ -145,6 +185,13 @@ public class Fifo
         throw new InvalidOperationException("Więcej akcji sprzedano niż kupiono. Dziwne!");
     }
 
+    /// <summary>
+    /// Splits the quantity of a specified symbol in the FIFO list.
+    /// </summary>
+    /// <param name="symbol">The symbol of the items to split.</param>
+    /// <param name="oldQuantity">The old quantity before the split.</param>
+    /// <param name="newQuantity">The new quantity after the split.</param>
+    /// <exception cref="ArgumentException">Thrown when the old quantity does not match the total quantity of the symbol or the new quantity is not a multiple of the old quantity.</exception>
     public void Split(
                 string symbol,
                 int oldQuantity,

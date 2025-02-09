@@ -1,9 +1,15 @@
 ﻿using System;
+using Freedom24PolTax.Dto;
 
-namespace Freedom24PolTax.Dto;
+namespace Freedom24PolTax;
 
 public class Calculations
 {
+    /// <summary>
+    /// Calculates the stock profit using FIFO (First In, First Out) method.
+    /// </summary>
+    /// <param name="transactions">The list of transactions to process.</param>
+    /// <returns>A <see cref="Fifo"/> object containing the processed transactions.</returns>
     public static Fifo CalculateStockProfit(IList<TransactionDto> transactions)
     {
         Fifo fifo = new();

@@ -3,10 +3,21 @@ using CommonUtils.Dto;
 
 namespace CommonUtils;
 
+/// <summary>
+/// Provides methods to interact with the NBP API to retrieve currency rates.
+/// </summary>
 public class NBPApi : INBPApi
 {
     private readonly Dictionary<string, Tuple<DateOnly, NBPRate>> cache = [];
 
+    /// <summary>
+    /// Gets the exchange rate for a specified currency and date.
+    /// </summary>
+    /// <param name="currency">The currency code (e.g., "USD").</param>
+    /// <param name="valueDate">The date for which the rate is requested.</param>
+    /// <returns>The exchange rate for the specified currency and date.</returns>
+    /// <exception cref="ArgumentException">Thrown when the currency code is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when there is an error retrieving or deserializing the rate.</exception>
     public NBPRate GetRate(string currency, DateOnly valueDate)
     {
         NBPRate rate;
@@ -41,7 +52,7 @@ public class NBPApi : INBPApi
         {
             maxDays--;
             date2 = date2.AddDays(-1);
-            string action2 = currency + "/" + date2.ToString("yyyy-MM-dd");
+            string action2 = $"{currency}/{date2.ToString("yyyy-MM-dd")}";
             httpResponseMessage = client.GetAsync(action2).Result;
 
             if (httpResponseMessage.IsSuccessStatusCode)

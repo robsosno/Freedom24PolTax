@@ -49,6 +49,9 @@ Exports.StockProfit(sharesFileName, fifo, nbpApi);
 Exports.CalculateDividendProfit(dividendFileName, dividends, nbpApi);
 return 0;
 
+/// <summary>
+/// Displays the help information for the program.
+/// </summary>
 static void DisplayHelp()
 {
     Console.WriteLine("{0}  version 1.0", ProgramName);

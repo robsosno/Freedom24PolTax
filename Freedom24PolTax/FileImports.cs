@@ -6,6 +6,12 @@ namespace Freedom24PolTax;
 
 public class FileImports
 {
+    /// <summary>
+    /// Imports transactions and dividends from a JSON file.
+    /// </summary>
+    /// <param name="fileName">The path to the JSON file.</param>
+    /// <returns>A tuple containing a list of transactions and a list of dividends.</returns>
+    /// <exception cref="ArgumentException">Thrown when an incorrect value is encountered in the JSON data.</exception>
     public static (IList<TransactionDto>, IList<DividendDto>) ImportTransactions(string fileName)
     {
         CultureInfo culture = CultureInfo.InvariantCulture;

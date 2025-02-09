@@ -5,6 +5,12 @@ namespace Freedom24PolTax;
 
 public class Exports
 {
+    /// <summary>
+    /// Generates a stock profit report and writes it to a file.
+    /// </summary>
+    /// <param name="sharesFileName">The name of the file to write the report to.</param>
+    /// <param name="fifo">The FIFO inventory management system containing buy and sell items.</param>
+    /// <param name="nbpApi">The NBP API to get currency rates.</param>
     public static void StockProfit(string sharesFileName, Fifo fifo, INBPApi nbpApi)
     {
         IList<StockReportItem> l = [];
@@ -97,6 +103,12 @@ public class Exports
         }
     }
 
+    /// <summary>
+    /// Calculates dividend profit and writes the report to a file.
+    /// </summary>
+    /// <param name="dividendFileName">The name of the file to write the report to.</param>
+    /// <param name="dividends">The list of dividends to calculate profit for.</param>
+    /// <param name="nbpApi">The NBP API to get currency rates.</param>
     public static void CalculateDividendProfit(string dividendFileName, IList<DividendDto> dividends, INBPApi nbpApi)
     {
         using (StreamWriter writetext = new(dividendFileName))
