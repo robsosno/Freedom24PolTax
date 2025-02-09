@@ -116,8 +116,7 @@ public class FileImports
             var fixationDate = s != null ? DateOnly.Parse(s) : DateOnly.MinValue;
             s = corporateAction.GetProperty("q_on_ex_date").GetString() ?? "0";
             var quantity = Decimal.ToInt32(decimal.Parse(s, culture));
-            s = corporateAction.GetProperty("tax_amount").GetString() ?? "0";
-            var taxAmount = decimal.Parse(s, culture);
+            var taxAmount = corporateAction.TryGetProperty("tax_amount", out JsonElement el) ? el.GetDecimal() : 0;
             var taxCurrency = corporateAction.GetProperty("tax_currency").GetString() ?? string.Empty;
             var comment = corporateAction.GetProperty("comment").GetString() ?? string.Empty;
 
