@@ -42,8 +42,10 @@ if (inputFileName.Length == 0)
 
 IList<DividendDto> dividends;
 IList<TransactionDto> transactions;
-(transactions, dividends) = FileImports.ImportTransactions(inputFileName);
-var fifo = Calculations.CalculateStockProfit(transactions);
+IList<ConversionComponent> conversions;
+IList<AwardDto> awards;
+(transactions, dividends, conversions, awards) = FileImports.ImportTransactions(inputFileName);
+var fifo = Calculations.CalculateStockProfit(transactions, conversions, awards);
 INBPApi nbpApi = new NBPApi();
 Exports.StockProfit(sharesFileName, fifo, nbpApi);
 Exports.CalculateDividendProfit(dividendFileName, dividends, nbpApi);
